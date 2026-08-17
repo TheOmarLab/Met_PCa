@@ -1,0 +1,47 @@
+name: metpca
+channels:
+  - conda-forge
+  - bioconda
+  - defaults
+
+# Direct dependency versions are pinned to the interpreter that produced the
+# accepted outputs (system Python 3.9.6). Packages not present in that verified
+# environment (lifelines, plotly, loompy, scikit-survival, gseapy) are left
+# unpinned deliberately rather than guessed; pin them from a built environment.
+dependencies:
+  - python=3.9.6
+
+  # Core data
+  - numpy=1.26.4
+  - pandas=2.3.3
+  - openpyxl=3.1.5
+
+  # Statistics / ML
+  - scikit-learn=1.6.1
+  - scipy=1.13.1
+  - statsmodels=0.14.6
+
+  # Survival analysis
+  - lifelines            # not present in the verified env; pin from a built env
+
+  # Visualisation
+  - matplotlib=3.9.4
+  - seaborn=0.13.2
+  - plotly               # not present in the verified env; pin from a built env
+
+  # Single-cell / bioinformatics
+  - scanpy=1.10.3
+  - anndata=0.10.9
+  - loompy               # not present in the verified env; pin from a built env
+
+  # Read R .rda files into Python
+  - rdata=0.11.2
+
+  # HTTP (direct use in data-preparation scripts)
+  - requests=2.32.5
+
+  # Packages with outdated conda-forge/bioconda builds — install from PyPI
+  - pip
+  - pip:
+      - scikit-survival   # not present in the verified env; needs cumulative_dynamic_auc from 0.20+
+      - gseapy            # not present in the verified env; latest is 1.1+

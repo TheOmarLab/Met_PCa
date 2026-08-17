@@ -1,0 +1,159 @@
+name: static-checks
+
+# Lightweight public-release checks. No private data is used and none is
+# simulated; these are syntax, hygiene, and locked-contract-schema checks only.
+# They do not replace full-data scientific verification.
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  static-checks:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - uses: r-lib/actions/setup-r@v2
+        with:
+          r-version: "4.4"
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.9"
+
+      - name: Parse every tracked R script
+        run: |
+          set -euo pipefail
+          fail=0
+          for f in $(git ls-files '*.R'); do
+            if ! Rscript -e 'invisible(parse(commandArgs(TRUE)[1]))' "$f" >/dev/null 2>parse.err; then
+              echo "R parse FAILED: $f"; cat parse.err; fail=1
+            fi
+          done
+          rm -f parse.err
+          exit $fail
+
+      - name: AST-parse every tracked Python script (no __pycache__)
+        run: |
+          set -euo pipefail
+          python - <<'PY'
+          import ast, subprocess, sys
+          files = subprocess.check_output(["git","ls-files","*.py"]).decode().split()
+          bad = []
+          for f in files:
+              try:
+                  ast.parse(open(f, encoding="utf-8").read(), filename=f)
+              except SyntaxError as e:
+                  bad.append(f"{f}: {e}")
+          if bad:
+              print("Python AST parse FAILED:"); print("\n".join(bad)); sys.exit(1)
+          print(f"AST-parsed {len(files)} Python files")
+          PY
+
+      - name: Syntax-check setup.sh
+        run: bash -n setup.sh
+
+      - name: Whitespace / conflict-marker check (pull_request)
+        if: ${{ github.event_name == 'pull_request' }}
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+        run: git diff --check "$BASE_SHA" HEAD
+
+      - name: Whitespace / conflict-marker check (push)
+        if: ${{ github.event_name != 'pull_request' }}
+        run: git show --check HEAD
+
+      - name: README-listed tracked scripts exist
+        run: |
+          python - <<'PY'
+          import re, os, sys
+          txt = open("README.md", encoding="utf-8").read()
+          paths = sorted(set(re.findall(r'code/[\w./-]+\.(?:R|py)', txt)))
+          missing = [p for p in paths if not os.path.isfile(p)]
+          if missing:
+              print("README lists tracked scripts that do not exist:")
+              print("\n".join(missing)); sys.exit(1)
+          print(f"All {len(paths)} README-listed scripts exist")
+          PY
+
+      - name: Locked-contract schema + ordered-gene identity (no model fit)
+        run: |
+          python - <<'PY'
+          import csv, math, sys
+          def rows(p):
+              with open(p, encoding="utf-8") as fh:
+                  return list(csv.DictReader(fh))
+          errs = []
+          coef = rows("config/metscore_locked_v1_coefficients.csv")
+          sig  = rows("config/metscore_signature_v1.csv")
+          meta = {r["field"]: r["value"] for r in rows("config/metscore_locked_v1_metadata.csv")}
+
+          coef_genes = [r["gene"] for r in coef]
+          if len(coef_genes) != len(set(coef_genes)):
+              errs.append("duplicate genes in coefficients")
+          for r in coef:
+              try:
+                  if not math.isfinite(float(r["coefficient"])):
+                      errs.append(f"non-finite coefficient: {r['gene']}")
+              except ValueError:
+                  errs.append(f"unparseable coefficient: {r['gene']}")
+
+          if int(meta["deployed_feature_count"]) != len(coef):
+              errs.append(f"deployed_feature_count {meta['deployed_feature_count']} != {len(coef)} coefficients")
+          if int(meta["biological_signature_count"]) != len(sig):
+              errs.append(f"biological_signature_count {meta['biological_signature_count']} != {len(sig)} signature genes")
+
+          # ordered identity: coefficient genes (in order) == signature rows flagged
+          # used_in_locked_model (in file order)
+          sig_deployed_ordered = [r["gene"] for r in sig
+                                  if str(r["used_in_locked_model"]).strip().upper() == "TRUE"]
+          if coef_genes != sig_deployed_ordered:
+              errs.append("ordered coefficient genes != ordered signature used_in_locked_model genes")
+
+          for key in ("version", "intercept", "lambda", "threshold", "source_artifact_sha256"):
+              if key not in meta:
+                  errs.append(f"metadata missing field: {key}")
+          if not (0.0 <= float(meta["threshold"]) <= 1.0):
+              errs.append(f"threshold out of range: {meta['threshold']}")
+          if len(meta.get("source_artifact_sha256", "")) != 64:
+              errs.append("source_artifact_sha256 is not a 64-char digest")
+
+          dec = rows("config/decipher_marker_surrogate_v1.csv")
+          if len({r["marker_number"] for r in dec}) != len(dec):
+              errs.append("duplicate Decipher marker numbers")
+
+          if errs:
+              print("Locked-contract schema FAILED:"); print("\n".join(errs)); sys.exit(1)
+          print(f"Locked contract OK: {len(coef)} deployed genes (ordered identity), {len(sig)} signature genes")
+          PY
+
+      - name: Forbidden tracked files (data objects, generated outputs, caches)
+        run: |
+          python - <<'PY'
+          import subprocess, sys, re, os
+          files = subprocess.check_output(["git","ls-files"]).decode().split()
+
+          # Patient / object / binary-data formats: never tracked (no allowlist).
+          data_obj = re.compile(r'\.(rda|rdata|rds|npz|npy|h5|h5ad|loom|pkl|pickle|parquet|feather)$', re.I)
+          # Generated figures / Office / caches: never tracked.
+          gen = re.compile(r'(\.png|\.tiff?|\.svg|\.pdf|\.xlsx|\.xls|\.docx|\.pptx|\.DS_Store|\.Rhistory|Rplots\.pdf|__pycache__|\.pyc)$', re.I)
+
+          bad = []
+          for f in files:
+              if data_obj.search(f):
+                  bad.append(f"{f}  [binary data object]")
+              elif gen.search(f):
+                  bad.append(f"{f}  [generated output / cache]")
+              # Tabular data may only live under config/ (the frozen contracts).
+              elif re.search(r'\.(csv|tsv)$', f, re.I) and not f.startswith("config/"):
+                  bad.append(f"{f}  [tabular data outside config/]")
+
+          if bad:
+              print("Forbidden files are tracked:")
+              print("\n".join(bad)); sys.exit(1)
+          print("No forbidden tracked files")
+          PY

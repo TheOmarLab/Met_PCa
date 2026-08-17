@@ -1,0 +1,24 @@
+marker_number,reported_name,gene_aliases,canonical_gene,feature_type,cytoband,androgen_regulated,gene_level_mappable,mapping_status,source
+1,LASP1,,LASP1,coding,17q12,,TRUE,canonical coding gene,Erho 2013 PLoS ONE Table 2
+2,IQGAP3,,IQGAP3,3' UTR,1q23.1,,TRUE,canonical gene (3' UTR feature),Erho 2013 PLoS ONE Table 2
+3,NFIB,,NFIB,intronic,9p23,,TRUE,canonical gene (intronic feature),Erho 2013 PLoS ONE Table 2
+4,S1PR4,,S1PR4,3' UTR,19p13.3,,TRUE,canonical gene (3' UTR feature),Erho 2013 PLoS ONE Table 2
+5,THBS2,,THBS2,3' UTR,6q27,,TRUE,canonical gene (3' UTR feature),Erho 2013 PLoS ONE Table 2
+6,ANO7,NGEP,ANO7,3' UTR,2q37.3,yes,TRUE,canonical gene (3' UTR feature),Erho 2013 PLoS ONE Table 2
+7,,,,non-coding transcript,,,FALSE,primary marker; nearest-gene/locus cell blank in Erho Table 2; no gene-level symbol,Erho 2013 PLoS ONE Table 2 (row 7)
+8,PCDH7,,PCDH7,intronic,4p15.1,yes,TRUE,canonical gene (intronic feature),Erho 2013 PLoS ONE Table 2
+9,MYBPC1,,MYBPC1,coding,12q23.2,yes,TRUE,canonical coding gene,Erho 2013 PLoS ONE Table 2
+10,,,,intronic,,,FALSE,primary marker; nearest-gene/locus cell blank in Erho Table 2; no gene-level symbol,Erho 2013 PLoS ONE Table 2 (row 10)
+11,EPPK1,,EPPK1,3' UTR,8q24.3,yes,TRUE,canonical gene (3' UTR feature),Erho 2013 PLoS ONE Table 2
+12,TSBP,C6orf10;TSBP1,TSBP1,intronic,6p21.32,,TRUE,canonical gene (intronic feature); HGNC TSBP1 formerly C6orf10,Erho 2013 PLoS ONE Table 2
+13,PBX1,,PBX1,coding,1q23.3,yes,TRUE,canonical coding gene,Erho 2013 PLoS ONE Table 2
+14,NUSAP1,,NUSAP1,3' UTR,15q15.1,,TRUE,canonical gene (3' UTR feature),Erho 2013 PLoS ONE Table 2
+15,ZWILCH,,ZWILCH,3' UTR,15q22.31,,TRUE,canonical gene (3' UTR feature),Erho 2013 PLoS ONE Table 2
+16,UBE2C,,UBE2C,3' UTR,20q13.12,yes,TRUE,canonical gene (3' UTR feature),Erho 2013 PLoS ONE Table 2
+17,,,,coding antisense,,,FALSE,primary marker; nearest-gene/locus cell blank in Erho Table 2; no gene-level symbol,Erho 2013 PLoS ONE Table 2 (row 17)
+18,CAMK2N1,,CAMK2N1,coding antisense,1p36.12,yes,TRUE,canonical gene (coding-antisense feature),Erho 2013 PLoS ONE Table 2
+19,RABGAP1,,RABGAP1,exon/intron junction antisense,9q33.2,,TRUE,canonical gene (exon/intron-junction antisense feature),Erho 2013 PLoS ONE Table 2
+20,PCAT-32,PCAT32,,non-coding transcript,5p15.2,,FALSE,primary marker; long non-coding RNA transcript; no canonical gene-level symbol,Erho 2013 PLoS ONE Table 2 (row 20)
+21,GLYATL1P4/PCAT-80,PCAT-80,GLYATL1P4,non-coding transcript,11q12.1,,TRUE,primary marker; Table 2 nearest-gene label 'GLYATL1P4/PCAT-80'; gene-level mapping = pseudogene GLYATL1P4,Erho 2013 PLoS ONE Table 2 (row 21)
+22,TNFRSF19,,TNFRSF19,intronic,13q12.12,,TRUE,canonical gene (intronic feature),Erho 2013 PLoS ONE Table 2
+legacy_excluded,TNF,,,not-a-marker,,,FALSE,legacy in-house list error (NOT a primary Table 2 marker and distinct from the four primary non-gene-mappable rows 7/10/17/20); Table 2 row 22 is TNFRSF19; excluded,removed per primary source

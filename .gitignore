@@ -1,0 +1,38 @@
+# Only code + reproducibility config is tracked. No data, no outputs.
+# Directory patterns are root-anchored so they never match code/ subdirs
+# (e.g. code/figures/, code/data_preparation/).
+
+/data/
+/outs/
+/output/
+/figures/
+
+*.rda
+*.rds
+*.RData
+*.h5
+*.pkl
+*.npz
+*.gct
+
+# caches / IDE / OS
+__pycache__/
+*.pyc
+*.pyo
+.Rproj.user/
+.DS_Store
+.Rhistory
+.Rapp.history
+.Ruserdata
+Rplots.pdf
+*.tmp
+*.temp
+*.bak
+*~
+*.swp
+*.swo
+
+# Local renv library and logs; no lockfile or activation scaffold is tracked
+renv/renv/library/
+renv/__renv/
+renv/___All_Errors.txt
