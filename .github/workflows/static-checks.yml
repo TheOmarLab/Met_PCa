@@ -65,7 +65,12 @@ jobs:
 
       - name: Whitespace / conflict-marker check (push)
         if: ${{ github.event_name != 'pull_request' }}
-        run: git show --check HEAD
+        run: |
+          if git rev-parse --verify HEAD^ >/dev/null 2>&1; then
+            git diff --check HEAD^ HEAD
+          else
+            echo "Initial release snapshot has no parent diff."
+          fi
 
       - name: README-listed tracked scripts exist
         run: |
